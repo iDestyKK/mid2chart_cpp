@@ -1,8 +1,14 @@
 /*
-MID2CHART C++ REWRITE
-Because writing this stuff in console + DLL form is better than GUI :)
+	MID2CHART C++ REWRITE
+	Because writing this stuff in console + DLL form is better than GUI :)
 
-By: Clara Eleanor Taylor
+	The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
+	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
+	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
+
+	NOTE: THIS APPLICATION IS SOOOOO INCOMPLETE ATM. ONLY PUT ON GIT BECAUSE I WANTED TO.
+	
+	By: Clara Eleanor Taylor
 */
 #include <iostream>
 #include <string>
@@ -263,7 +269,12 @@ int main() {
 	cout << "BPM Changes:     " << bpm_count << " (" << bpm_average / 1000 << " BPM average)" << endl;
 
 	//Next up is notes. We have configured the note data above as constants. So we are just going to speed by this.
-	
+	for (int a = 0; a < num_of_ins; a++) {
+		if (ins_exists[a]) {
+			pos = ins_pos[a];
+
+		}
+	}
 
 	//We're done. Close the file.
 	midi.close();
