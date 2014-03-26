@@ -1,18 +1,18 @@
 ﻿/*
-	MID2CHART C++ REWRITE
-	Because writing this stuff in console + DLL form is better than GUI :)
+MID2CHART C++ REWRITE
+Because writing this stuff in console + DLL form is better than GUI :)
 
-	The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
-	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
-	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
+The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
+Since all other converters don't work (And people do not like using Feedback Chart Editor)...
+I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
 
-	Update (2014年3月26日):
-		-Added Note conversions
-		-Added Event conversions
-		-The stuff actually converts like I wanted it to.
-		-File writing implemented.
-	
-	By: Clara Eleanor Taylor
+Update (2014年3月26日):
+-Added Note conversions
+-Added Event conversions
+-The stuff actually converts like I wanted it to.
+-File writing implemented.
+
+By: Clara Eleanor Taylor
 */
 
 #include <iostream>
@@ -30,15 +30,15 @@ const int num_of_difficulties = 4;
 
 //Define all of the names here.
 const string difficulties[num_of_difficulties] = { "Expert", "Hard", "Medium", "Easy" };
-const string instruments [num_of_ins         ] = { "Single", "DoubleBass", "Drums", "Keys" };
-const string corris_inst [num_of_ins         ] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
+const string instruments[num_of_ins] = { "Single", "DoubleBass", "Drums", "Keys" };
+const string corris_inst[num_of_ins] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
 
 //This is for identifying the file later on. If you tack on another instrument, add {19, 20, 21, 22}, etc.
 //If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
-const int inst_ind[num_of_ins][num_of_difficulties] = { {3 , 4 , 5 , 6 },
-														{7 , 8 , 9 , 10},
-														{11, 12, 13, 14},
-														{15, 16, 17, 18} };
+const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
+{ 7, 8, 9, 10 },
+{ 11, 12, 13, 14 },
+{ 15, 16, 17, 18 } };
 //Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
 //Left-to-Right = Difficulty
 //Up-to-Down = Instrument
@@ -46,9 +46,9 @@ const int inst_ind[num_of_ins][num_of_difficulties] = { {3 , 4 , 5 , 6 },
 
 //Tell the application what values are actually notes...
 const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x63, 0x64 },
-														 { 0x54, 0x55, 0x56, 0x57, 0x58 },
-														 { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
-														 { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
+{ 0x54, 0x55, 0x56, 0x57, 0x58 },
+{ 0x48, 0x49, 0x4A, 0x4B, 0x4C },
+{ 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
 //ORDER
 //Expert: Green, Red, Yellow, Blue, Orange
 //Hard: Green, Red, Yellow, Blue, Orange
@@ -87,8 +87,7 @@ unsigned int VLQ_to_Int(unsigned int byte[], unsigned int&pos) {
 		}
 		bits = bits + seq;
 		pos += 1;
-	}
-	while ((byte[pos - 1] & (1 << 7)) != 0);
+	} while ((byte[pos - 1] & (1 << 7)) != 0);
 
 	//Combine the bits in the most inefficient way possible.
 	for (unsigned int i = 0; i < bits.length(); i++) {
@@ -114,12 +113,12 @@ int main(int argc, char* argv[]) {
 
 	if (argc < 2) {
 		cerr << "Usage: mid2chart.exe <input path> <output path>"
-			 << endl 
-			 << endl 
-			 << "    <output path> is purely optional." 
-			 << endl 
-			 << "    If blank, uses input name + \".chart\" (not affecting the MIDI!)" 
-			 << endl;
+			<< endl
+			<< endl
+			<< "    <output path> is purely optional."
+			<< endl
+			<< "    If blank, uses input name + \".chart\" (not affecting the MIDI!)"
+			<< endl;
 		return 1;
 	}
 
@@ -461,23 +460,23 @@ int main(int argc, char* argv[]) {
 
 				switch (readbyte(ibyte, pos))
 				{
-					case 0x01: //This is a Text Event... get it out of here.
-						count = readbyte(ibyte, pos);
+				case 0x01: //This is a Text Event... get it out of here.
+					count = readbyte(ibyte, pos);
 
-						//Read the chars
-						for (int i = 0; i < count; i++) {
-							char tmp_str = readbyte(ibyte, pos);
-							if (tmp_str != '[' && tmp_str != ']') {
-								text_event += tmp_str;
-							}
+					//Read the chars
+					for (int i = 0; i < count; i++) {
+						char tmp_str = readbyte(ibyte, pos);
+						if (tmp_str != '[' && tmp_str != ']') {
+							text_event += tmp_str;
 						}
+					}
 
-						//Write them to the strings
-						track_string[2] += "	" + to_string(e_pos) + " = E \"" + text_event + "\"\n";
-						break;
-					case 0x2F: //le fin... French is better than Spanish.
-						hit_end = true;
-						break;
+					//Write them to the strings
+					track_string[2] += "	" + to_string(e_pos) + " = E \"" + text_event + "\"\n";
+					break;
+				case 0x2F: //le fin... French is better than Spanish.
+					hit_end = true;
+					break;
 				}
 			}
 			else
@@ -485,8 +484,8 @@ int main(int argc, char* argv[]) {
 				switch (readbyte(ibyte, pos))
 				{
 					//lol
-					case 24: break;
-					case 26: break;
+				case 24: break;
+				case 26: break;
 				}
 				pos += 1;
 			}
