@@ -43,9 +43,9 @@ const string corris_inst [num_of_ins         ] = { "PART GUITAR", "PART BASS", "
 //This is for identifying the file later on. If you tack on another instrument, add {19, 20, 21, 22}, etc.
 //If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
 const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
-														{ 7, 8, 9, 10 },
+                                                        { 7, 8, 9, 10 },
 														{ 11, 12, 13, 14 },
-														{ 15, 16, 17, 18 } };
+                                                        { 15, 16, 17, 18 } };
 //Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
 //Left-to-Right = Difficulty
 //Up-to-Down = Instrument
@@ -53,9 +53,9 @@ const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
 
 //Tell the application what values are actually notes...
 const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x63, 0x64 },
-														 { 0x54, 0x55, 0x56, 0x57, 0x58 },
-														 { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
-														 { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
+                                                         { 0x54, 0x55, 0x56, 0x57, 0x58 },
+                                                         { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
+                                                         { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
 //ORDER
 //Expert: Green, Red, Yellow, Blue, Orange
 //Hard: Green, Red, Yellow, Blue, Orange
