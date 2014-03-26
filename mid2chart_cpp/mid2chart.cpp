@@ -1,18 +1,25 @@
 ﻿/*
-MID2CHART C++ REWRITE
-Because writing this stuff in console + DLL form is better than GUI :)
+	MID2CHART C++ REWRITE
+	Because writing this stuff in console + DLL form is better than GUI :)
 
-The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
-Since all other converters don't work (And people do not like using Feedback Chart Editor)...
-I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
+	The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
+	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
+	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
 
-Update (2014年3月26日):
--Added Note conversions
--Added Event conversions
--The stuff actually converts like I wanted it to.
--File writing implemented.
+	Update (2014年3月26日):
+		-Added Note conversions
+		-Added Event conversions
+		-The stuff actually converts like I wanted it to.
+		-File writing implemented.
 
-By: Clara Eleanor Taylor
+	By: Clara Eleanor Taylor
+
+	Possible Usages:
+		mid2chart.exe <input file> <output file>
+		mid2chart.exe <input file>
+
+	If <output file> is voided, the output the application spits out will be the <input file> with ".chart" slapped on.
+	e.g. "mid2chart.exe song.mid" will create "song.mid.chart".
 */
 
 #include <iostream>
