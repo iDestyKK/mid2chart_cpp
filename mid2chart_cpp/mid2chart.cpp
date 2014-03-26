@@ -44,7 +44,7 @@ const string corris_inst [num_of_ins         ] = { "PART GUITAR", "PART BASS", "
 //If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
 const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
                                                         { 7, 8, 9, 10 },
-														{ 11, 12, 13, 14 },
+                                                        { 11, 12, 13, 14 },
                                                         { 15, 16, 17, 18 } };
 //Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
 //Left-to-Right = Difficulty
