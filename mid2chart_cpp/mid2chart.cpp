@@ -1,4 +1,4 @@
-/*
+﻿/*
 	MID2CHART C++ REWRITE
 	Because writing this stuff in console + DLL form is better than GUI :)
 
@@ -6,21 +6,53 @@
 	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
 	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
 
-	NOTE: THIS APPLICATION IS SOOOOO INCOMPLETE ATM. ONLY PUT ON GIT BECAUSE I WANTED TO.
+	Update (2014年3月26日):
+		-Added Note conversions
+		-Added Event conversions
+		-The stuff actually converts like I wanted it to.
+		-File writing implemented.
 	
 	By: Clara Eleanor Taylor
 */
+
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
-const string difficulties[] = { "Expert", "Hard", "Medium", "Easy" };
-const string instruments[] = { "Single", "DoubleBass", "Drums", "Keys" };
-const string corris_inst[] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
+//These are GLOBAL application settings. Change them if you want to add in extra difficulties, instruments, etc.
 const int num_of_ins = 4;
+const int num_of_difficulties = 4;
+
+//Define all of the names here.
+const string difficulties[num_of_difficulties] = { "Expert", "Hard", "Medium", "Easy" };
+const string instruments [num_of_ins         ] = { "Single", "DoubleBass", "Drums", "Keys" };
+const string corris_inst [num_of_ins         ] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
+
+//This is for identifying the file later on. If you tack on another instrument, add {19, 20, 21, 22}, etc.
+//If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
+const int inst_ind[num_of_ins][num_of_difficulties] = { {3 , 4 , 5 , 6 },
+														{7 , 8 , 9 , 10},
+														{11, 12, 13, 14},
+														{15, 16, 17, 18} };
+//Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
+//Left-to-Right = Difficulty
+//Up-to-Down = Instrument
+
+
+//Tell the application what values are actually notes...
+const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x63, 0x64 },
+														 { 0x54, 0x55, 0x56, 0x57, 0x58 },
+														 { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
+														 { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
+//ORDER
+//Expert: Green, Red, Yellow, Blue, Orange
+//Hard: Green, Red, Yellow, Blue, Orange
+//etc.
 
 unsigned int readbyte(unsigned int byte[], unsigned int&pos) {
 	//I am used to C# and GML's method of reading bytes via function. This pretty much replicates it :3
@@ -67,9 +99,8 @@ unsigned int VLQ_to_Int(unsigned int byte[], unsigned int&pos) {
 	return total;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	ifstream midi;
-	string path = "C:\\test\\notes.mid";
 
 	//Show the console our pretty little art.
 	cout << "/---------------------------------------------------------\\" << endl
@@ -80,6 +111,29 @@ int main() {
 		<< "|    For people who know what the hell they are doing.    |" << endl
 		<< "|*                                                       *|" << endl
 		<< "\\---------------------------------------------------------/\n\n";
+
+	if (argc < 2) {
+		cerr << "Usage: mid2chart.exe <input path> <output path>"
+			 << endl 
+			 << endl 
+			 << "    <output path> is purely optional." 
+			 << endl 
+			 << "    If blank, uses input name + \".chart\" (not affecting the MIDI!)" 
+			 << endl;
+		return 1;
+	}
+
+	string path, opath;
+
+	if (argc == 2) {
+		path = argv[1];
+		opath = string(argv[1]) + ".chart";
+	}
+
+	if (argc == 3) {
+		path = argv[1];
+		opath = argv[2];
+	}
 
 	//Now tell the end-user that we are actually trying to do something...
 	cout << "Attempting to open MIDI File: " << path << "\n\n";
@@ -157,11 +211,13 @@ int main() {
 	unsigned int* position_of_track = new unsigned int[track_number];
 	string* name_of_track = new string[track_number];
 	string* track_string = new string[track_number];
+	string* track_title = new string[track_number];
 
 	cout << "Track Names:     ";
 
 	bool ins_exists[num_of_ins];
-	unsigned int ins_pos[num_of_ins];
+	bool events_exist = false;
+	unsigned int ins_pos[num_of_ins], events_pos;
 
 	//Get the track data... At least the base of it.
 	for (unsigned int i = 0; i < track_number; i++) {
@@ -190,8 +246,13 @@ int main() {
 			for (int a = 0; a < num_of_ins; a++) {
 				if (name_of_track[i] == corris_inst[a]) {
 					ins_exists[a] = true;
-					ins_pos[a] = position_of_track[i];
+					ins_pos[a] = position_of_track[i] + 12 + name.length();
 				}
+			}
+
+			if (name_of_track[i] == "EVENTS") {
+				events_exist = true;
+				events_pos = position_of_track[i] + 12 + name.length();
 			}
 		}
 		else {
@@ -203,6 +264,7 @@ int main() {
 	}
 
 	//The first one is the chart data. This is very important for song information. [Song]
+	track_title[0] = "Song";
 	track_string[0] = "[Song]\n";
 	track_string[0] += "{\n";
 	track_string[0] += "	Name = \"" + name_of_track[0] + "\"\n";
@@ -222,6 +284,7 @@ int main() {
 	track_string[0] += "}\n";
 
 	//The second one has the BPM Changes and Time Signature Changes.
+	track_title[1] = "SyncTrack";
 	track_string[1] = "[SyncTrack]\n";
 	track_string[1] += "{\n";
 
@@ -233,29 +296,29 @@ int main() {
 	unsigned int bpm_count = 0, ts_count = 0;
 	double bpm_average = 0;
 
-	double bpm = 0;
+	int bpm = 0;
 	while (hit_end == false) {
 		if (readbyte(ibyte, pos) == 0xFF) {
 			switch (readbyte(ibyte, pos))
 			{
-				case 0x58: //Time Signature
-					pos += 1;
-					track_string[1] += "	" + to_string(cur_pos) + " = TS " + to_string(readbyte(ibyte, pos)) + "\n";
-					pos += 3;
-					cur_pos += VLQ_to_Int(ibyte, pos);
-					ts_count += 1;
-					break;
-				case 0x51: //BPM Setup
-					pos += 1;
-					bpm = 60000000000 / ((readbyte(ibyte, pos) * 65536) + (readbyte(ibyte, pos) * 256) + readbyte(ibyte, pos));
-					track_string[1] += "	" + to_string(cur_pos) + " = B " + to_string(bpm) + "\n";
-					bpm_average += bpm;
-					cur_pos += VLQ_to_Int(ibyte, pos);
-					bpm_count += 1;
-					break;
-				case 0x2F: //End.
-					hit_end = true;
-					break;
+			case 0x58: //Time Signature
+				pos += 1;
+				track_string[1] += "	" + to_string(cur_pos) + " = TS " + to_string(readbyte(ibyte, pos)) + "\n";
+				pos += 3;
+				cur_pos += VLQ_to_Int(ibyte, pos);
+				ts_count += 1;
+				break;
+			case 0x51: //BPM Setup
+				pos += 1;
+				bpm = 60000000000 / ((readbyte(ibyte, pos) * 65536) + (readbyte(ibyte, pos) * 256) + readbyte(ibyte, pos));
+				track_string[1] += "	" + to_string(cur_pos) + " = B " + to_string(bpm) + "\n";
+				bpm_average += bpm;
+				cur_pos += VLQ_to_Int(ibyte, pos);
+				bpm_count += 1;
+				break;
+			case 0x2F: //End.
+				hit_end = true;
+				break;
 			}
 		}
 	}
@@ -267,17 +330,194 @@ int main() {
 	cout << endl;
 	cout << "Time Signatures: " << ts_count << endl;
 	cout << "BPM Changes:     " << bpm_count << " (" << bpm_average / 1000 << " BPM average)" << endl;
+	cout << endl;
 
 	//Next up is notes. We have configured the note data above as constants. So we are just going to speed by this.
-	for (int a = 0; a < num_of_ins; a++) {
-		if (ins_exists[a]) {
-			pos = ins_pos[a];
+	for (int ins = 0; ins < num_of_ins; ins++) {
+		if (!ins_exists[ins])
+			continue; //Just get rid of it. We do not want to waste bytes of space.
 
+		//Carry on.
+		unsigned int track_pos[num_of_difficulties];
+		for (int _i = 0; _i < num_of_difficulties; _i++)
+		{
+			track_title[inst_ind[ins][_i]] = difficulties[_i] + instruments[ins];
+			track_string[inst_ind[ins][_i]] = "[" + difficulties[_i] + instruments[ins] + "]\n";
+			track_string[inst_ind[ins][_i]] += "{\n";
+			track_pos[_i] = 0;
 		}
+
+		//This is for sustains. Notice how 5 is used here.
+		//Every lane has 5 frets, therefore, 5 is fixed and hardcoded (TODO: Jagged Vector & Custom size for flexibility).
+		int note_queue[num_of_difficulties][5];
+		for (int i = 0; i < num_of_difficulties; i++) {
+			for (int _i = 0; _i < 5; _i++) {
+				note_queue[i][_i] = 0;
+			}
+		}
+
+		pos = ins_pos[ins];
+		bool hit_end = false;
+		unsigned int tmp_move;
+		cout << "Found " << setw(12) << left << corris_inst[ins];
+		while (hit_end == false) {
+			tmp_move = VLQ_to_Int(ibyte, pos);
+			for (int _i = 0; _i < num_of_difficulties; _i++)
+			{
+				track_pos[_i] += tmp_move;
+			}
+
+			unsigned char skittles = readbyte(ibyte, pos);
+			if (skittles == 0xFF) {
+				string text_event = "";
+				unsigned int count;
+
+				switch (readbyte(ibyte, pos))
+				{
+				case 0x01: //This is a Text Event... get it out of here.
+					count = readbyte(ibyte, pos);
+
+					//Read the chars
+					for (int i = 0; i < count; i++) {
+						text_event += (char)readbyte(ibyte, pos);
+					}
+
+					//Write them to the strings
+					for (unsigned int a = 0; a < num_of_difficulties; a++) {
+						track_string[inst_ind[ins][a]] += "	" + to_string(track_pos[a]) + " = E " + text_event + "\n";
+					}
+					break;
+				case 0x2F: //el fin... oh wait I hate that language (seriously).
+					hit_end = true;
+					break;
+				}
+			}
+			else
+			if (skittles >= 0x80 && skittles <= 0x9F) {
+				unsigned char note = readbyte(ibyte, pos);
+
+				//Alright, the C# version had a HUGE switch-and-case statement. We are going to simply that right now.
+				for (int a = 0; a < num_of_difficulties; a++) {
+					for (int b = 0; b < 5; b++) {
+						if (note_hex[a][b] == note) {
+							//YES. It matches. Now let's do some fun stuff.
+							if (note_queue[a][b] == 0) {
+								note_queue[a][b] = track_pos[a];
+							}
+							else {
+								if (track_pos[a] - note_queue[a][b] > delta_time / 4) {
+									//This allows for sustainable notes. Anything lower will have the sustain removed, period.
+									track_string[inst_ind[ins][a]] += "    " + to_string(note_queue[a][b])
+										+ " = N " + to_string(b)
+										+ " " + to_string(track_pos[a] - note_queue[a][b])
+										+ "\n";
+								}
+								else {
+									//Snip that tiny (or non-existant) sustain off.
+									track_string[inst_ind[ins][a]] += "    " + to_string(note_queue[a][b])
+										+ " = N " + to_string(b)
+										+ " 0"
+										+ "\n";
+								}
+								note_queue[a][b] = 0;
+							}
+
+							//Kill the chain afterwards.
+							break;
+						}
+					}
+				}
+				pos += 1;
+			}
+		}
+
+
+		//Add in the final mark.
+		for (int _i = 0; _i < 4; _i++)
+		{
+			track_string[inst_ind[ins][_i]] += "}\n";
+		}
+
+		cout << "...Converted!" << endl;
 	}
 
-	//We're done. Close the file.
+	//There is one more track to write... and that is the events.
+	if (events_exist) {
+		pos = events_pos;
+		cout << "Found " << setw(12) << left << "EVENTS";
+		bool hit_end = false;
+		unsigned int tmp_move, e_pos = 0;
+		track_title[2] = "Events";
+		track_string[2] = "[EVENTS]\n{\n";
+
+		while (hit_end == false) {
+			tmp_move = VLQ_to_Int(ibyte, pos);
+			e_pos += tmp_move;
+
+			unsigned char skittles = readbyte(ibyte, pos);
+			if (skittles == 0xFF) {
+				string text_event = "";
+				unsigned int count;
+
+				switch (readbyte(ibyte, pos))
+				{
+					case 0x01: //This is a Text Event... get it out of here.
+						count = readbyte(ibyte, pos);
+
+						//Read the chars
+						for (int i = 0; i < count; i++) {
+							char tmp_str = readbyte(ibyte, pos);
+							if (tmp_str != '[' && tmp_str != ']') {
+								text_event += tmp_str;
+							}
+						}
+
+						//Write them to the strings
+						track_string[2] += "	" + to_string(e_pos) + " = E \"" + text_event + "\"\n";
+						break;
+					case 0x2F: //le fin... French is better than Spanish.
+						hit_end = true;
+						break;
+				}
+			}
+			else
+			if (skittles >= 0x80 && skittles <= 0x9F) {
+				switch (readbyte(ibyte, pos))
+				{
+					//lol
+					case 24: break;
+					case 26: break;
+				}
+				pos += 1;
+			}
+
+		}
+		track_string[2] += "}\n";
+		cout << "...Converted!" << endl;
+	}
+
+	cout << endl << "Writing to file: " << opath << endl;
+
+	//Now we are going to write it to a file... THE EASY WAY.
+	ofstream chart;
+	chart.open(opath);
+	for (unsigned int i = 0; i < track_number; i++) {
+		chart << track_string[i];
+		if (track_title[i] != "") {
+			cout << "        Wrote: " << track_title[i] << endl;
+		}
+	}
+	cout << endl;
+
+	cout << "Write successful. Cleaning up." << endl;
+
+	//We're done. Close the files.
+	chart.close();
 	midi.close();
+
+	cout << "Press Enter to Exit.";
 	getchar();
+
+	//Return 0 to the Operating System. Apparently that is "good practice"... not like it matters.
 	return 0;
 }
