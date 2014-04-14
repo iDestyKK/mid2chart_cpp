@@ -71,13 +71,16 @@ unsigned int readbyte(unsigned int byte[], unsigned int&pos) {
 unsigned int read2byte(unsigned int byte[], unsigned int&pos) {
 	//This is a pain but when put in a function... it makes life so much easier...
 	pos += 2;
-	return (byte[pos - 2] * 256) + byte[pos - 1];
+	return (byte[pos - 2] * (2 << 7)) + byte[pos - 1];
 }
 
 unsigned int read4byte(unsigned int byte[], unsigned int&pos) {
 	//This is a pain but when put in a function... it makes life so much easier...
 	pos += 4;
-	return (byte[pos - 4] * 16777216) + (byte[pos - 3] * 65536) + (byte[pos - 2] * 256) + byte[pos - 1];
+	return (byte[pos - 4] * (2 << 23)) 
+		 + (byte[pos - 3] * (2 << 15))
+		 + (byte[pos - 2] * (2 << 7 ))
+		 +  byte[pos - 1];
 }
 
 unsigned int VLQ_to_Int(unsigned int byte[], unsigned int&pos) {
@@ -521,8 +524,9 @@ int main(int argc, char* argv[]) {
 	chart.close();
 	midi.close();
 
-	cout << "Press Enter to Exit.";
-	getchar();
+	//For debugging purposes only.
+	//cout << "Press Enter to Exit.";
+	//getchar();
 
 	//Return 0 to the Operating System. Apparently that is "good practice"... not like it matters.
 	return 0;
