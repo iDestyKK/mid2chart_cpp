@@ -1,26 +1,26 @@
-﻿/*
-	MID2CHART C++ REWRITE
-	Because writing this stuff in console + DLL form is better than GUI :)
+﻿﻿/*
+ MID2CHART C++ REWRITE
+ Because writing this stuff in console + DLL form is better than GUI :)
 
-	The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
-	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
-	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
+ The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
+ Since all other converters don't work (And people do not like using Feedback Chart Editor)...
+ I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
 
-	Update (2014年3月26日):
-		-Added Note conversions
-		-Added Event conversions
-		-The stuff actually converts like I wanted it to.
-		-File writing implemented.
+ Update (2014年3月26日):
+ -Added Note conversions
+ -Added Event conversions
+ -The stuff actually converts like I wanted it to.
+ -File writing implemented.
 
-	By: Clara Eleanor Taylor
+ By: Clara Eleanor Taylor
 
-	Possible Usages:
-		mid2chart.exe <input file> <output file>
-		mid2chart.exe <input file>
+ Possible Usages:
+ mid2chart.exe <input file> <output file>
+ mid2chart.exe <input file>
 
-	If <output file> is voided, the output the application spits out will be the <input file> with ".chart" slapped on.
-	e.g. "mid2chart.exe song.mid" will create "song.mid.chart".
-*/
+ If <output file> is voided, the output the application spits out will be the <input file> with ".chart" slapped on.
+ e.g. "mid2chart.exe song.mid" will create "song.mid.chart".
+ */
 
 #include <iostream>
 #include <iomanip>
@@ -29,7 +29,7 @@
 #include <fstream>
 #include <vector>
 
-using namespace std;
+ using namespace std;
 
 //These are GLOBAL application settings. Change them if you want to add in extra difficulties, instruments, etc.
 const int num_of_ins = 4;
@@ -37,15 +37,15 @@ const int num_of_difficulties = 4;
 
 //Define all of the names here.
 const string difficulties[num_of_difficulties] = { "Expert", "Hard", "Medium", "Easy" };
-const string instruments [num_of_ins         ] = { "Single", "DoubleBass", "Drums", "Keys" };
-const string corris_inst [num_of_ins         ] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
+const string instruments[num_of_ins] = { "Single", "DoubleBass", "Drums", "Keys" };
+const string corris_inst[num_of_ins] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
 
 //This is for identifying the file later on. If you tack on another instrument, add {19, 20, 21, 22}, etc.
 //If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
 const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
-                                                        { 7, 8, 9, 10 },
-                                                        { 11, 12, 13, 14 },
-                                                        { 15, 16, 17, 18 } };
+{ 7, 8, 9, 10 },
+{ 11, 12, 13, 14 },
+{ 15, 16, 17, 18 } };
 //Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
 //Left-to-Right = Difficulty
 //Up-to-Down = Instrument
@@ -53,9 +53,9 @@ const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
 
 //Tell the application what values are actually notes...
 const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x63, 0x64 },
-                                                         { 0x54, 0x55, 0x56, 0x57, 0x58 },
-                                                         { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
-                                                         { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
+{ 0x54, 0x55, 0x56, 0x57, 0x58 },
+{ 0x48, 0x49, 0x4A, 0x4B, 0x4C },
+{ 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
 //ORDER
 //Expert: Green, Red, Yellow, Blue, Orange
 //Hard: Green, Red, Yellow, Blue, Orange
@@ -71,16 +71,17 @@ unsigned int readbyte(unsigned int byte[], unsigned int&pos) {
 unsigned int read2byte(unsigned int byte[], unsigned int&pos) {
 	//This is a pain but when put in a function... it makes life so much easier...
 	pos += 2;
-	return (byte[pos - 2] * (2 << 7)) + byte[pos - 1];
+	return (byte[pos - 2] * (2 << 7))
+	      + byte[pos - 1];
 }
 
 unsigned int read4byte(unsigned int byte[], unsigned int&pos) {
 	//This is a pain but when put in a function... it makes life so much easier...
 	pos += 4;
-	return (byte[pos - 4] * (2 << 23)) 
-		 + (byte[pos - 3] * (2 << 15))
-		 + (byte[pos - 2] * (2 << 7 ))
-		 +  byte[pos - 1];
+	return (byte[pos - 4] * (2 << 23))
+	     + (byte[pos - 3] * (2 << 15))
+	     + (byte[pos - 2] * (2 <<  7))
+	     +  byte[pos - 1];
 }
 
 unsigned int VLQ_to_Int(unsigned int byte[], unsigned int&pos) {
