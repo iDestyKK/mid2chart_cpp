@@ -1,25 +1,25 @@
 ﻿/*
-MID2CHART C++ REWRITE
-Because writing this stuff in console + DLL form is better than GUI :)
-
-The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
-Since all other converters don't work (And people do not like using Feedback Chart Editor)...
-I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
-
-Update (2014年3月26日):
--Added Note conversions
--Added Event conversions
--The stuff actually converts like I wanted it to.
--File writing implemented.
-
-By: Clara Eleanor Taylor
-
-Possible Usages:
-mid2chart.exe <input file> <output file>
-mid2chart.exe <input file>
-
-If <output file> is voided, the output the application spits out will be the <input file> with ".chart" slapped on.
-e.g. "mid2chart.exe song.mid" will create "song.mid.chart".
+	MID2CHART C++ REWRITE
+	Because writing this stuff in console + DLL form is better than GUI :)
+	
+	The purpose of this console application is strictly to convert Rock Band 3 MIDIs to Frets on Fire/Keyboard Hero's *.chart format.
+	Since all other converters don't work (And people do not like using Feedback Chart Editor)...
+	I decided to make an app that converts to chart retaining the Keyboard Note Data. Putting it in [ExpertKeyboard], etc.
+	
+	Update (2014年3月26日):
+	-Added Note conversions
+	-Added Event conversions
+	-The stuff actually converts like I wanted it to.
+	-File writing implemented.
+	
+	By: Clara Eleanor Taylor
+	
+	Possible Usages:
+	mid2chart.exe <input file> <output file>
+	mid2chart.exe <input file>
+	
+	If <output file> is voided, the output the application spits out will be the <input file> with ".chart" slapped on.
+	e.g. "mid2chart.exe song.mid" will create "song.mid.chart".
 */
 
 #include <iostream>
@@ -43,8 +43,8 @@ const string corris_inst[num_of_ins] = { "PART GUITAR", "PART BASS", "PART DRUMS
 //If you add another difficulty, increase each array bracket by 1. e.g., {3, 4, 5, 6, 7}, etc.
 const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
                                                         { 7, 8, 9, 10 },
-														{ 11, 12, 13, 14 },
-														{ 15, 16, 17, 18 } };
+                                                        { 11, 12, 13, 14 },
+                                                        { 15, 16, 17, 18 } };
 //Still confused? Here is a further example. { {ExpertSingle, HardSingle}, {ExpertDoubleBass, HardDoubleBass} };
 //Left-to-Right = Difficulty
 //Up-to-Down = Instrument
@@ -53,8 +53,8 @@ const int inst_ind[num_of_ins][num_of_difficulties] = { { 3, 4, 5, 6 },
 //Tell the application what values are actually notes...
 const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x63, 0x64 },
                                                          { 0x54, 0x55, 0x56, 0x57, 0x58 },
-														 { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
-														 { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
+                                                         { 0x48, 0x49, 0x4A, 0x4B, 0x4C },
+                                                         { 0x3C, 0x3D, 0x3E, 0x3F, 0x40 } };
 //ORDER
 //Expert: Green, Red, Yellow, Blue, Orange
 //Hard: Green, Red, Yellow, Blue, Orange
