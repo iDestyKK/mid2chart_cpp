@@ -27,7 +27,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-;
+#include <cmath>
+
 using namespace std;
 
 //These are GLOBAL application settings. Change them if you want to add in extra difficulties, instruments, etc.
@@ -36,7 +37,7 @@ const int num_of_difficulties = 4;
 
 //Define all of the names here.
 const string difficulties[num_of_difficulties] = { "Expert", "Hard", "Medium", "Easy" };
-const string instruments[num_of_ins] = { "Single", "DoubleBass", "Drums", "Keys" };
+const string instruments[num_of_ins] = { "Single", "DoubleBass", "Drums", "Keyboard" };
 const string corris_inst[num_of_ins] = { "PART GUITAR", "PART BASS", "PART DRUMS", "PART KEYS" };
 
 //This is for identifying the file later on. If you tack on another instrument, add {19, 20, 21, 22}, etc.
@@ -59,6 +60,19 @@ const unsigned char note_hex[num_of_difficulties][5] = { { 0x60, 0x61, 0x62, 0x6
 //Expert: Green, Red, Yellow, Blue, Orange
 //Hard: Green, Red, Yellow, Blue, Orange
 //etc.
+
+string to_hex(int number) {
+	stringstream stream;
+	stream << hex << number;
+	return stream.str();
+}
+
+string tostring(int integer) {
+	string res;
+	ostringstream convert;
+	convert << integer;
+	return convert.str();
+}
 
 unsigned int readbyte(unsigned int byte[], unsigned int&pos) {
 	//I am used to C# and GML's method of reading bytes via function. This pretty much replicates it :3
@@ -93,15 +107,14 @@ unsigned int VLQ_to_Int(unsigned int byte[], unsigned int&pos) {
 	do {
 		string seq = "";
 		for (int i = 0; i < 7; i++) {
-			seq = to_string((byte[pos] & (1 << i)) != 0) + seq;
+			seq = tostring((byte[pos] & (1 << i)) != 0) + seq;
 		}
 		bits = bits + seq;
 		pos += 1;
 	} while ((byte[pos - 1] & (1 << 7)) != 0);
-
 	//Combine the bits in the most inefficient way possible.
 	for (unsigned int i = 0; i < bits.length(); i++) {
-		total += pow(2, bits.length() - i - 1) * (bits[i] != '0');
+		total += pow((double)2, (int)((bits.length() - i) - 1)) * (bits[i] != '0');
 	}
 
 	//Save the day.
@@ -121,6 +134,8 @@ int main(int argc, char* argv[]) {
 		<< "|*                                                       *|" << endl
 		<< "\\---------------------------------------------------------/\n\n";
 
+	
+	string path, opath;
 	if (argc < 2) {
 		cerr << "Usage: mid2chart.exe <input path> <output path>"
 			<< endl
@@ -132,7 +147,6 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	string path, opath;
 
 	if (argc == 2) {
 		path = argv[1];
@@ -143,6 +157,9 @@ int main(int argc, char* argv[]) {
 		path = argv[1];
 		opath = argv[2];
 	}
+
+	//path = "C:\\test\\notes.mid";
+	//opath = string(path) + ".chart";
 
 	//Now tell the end-user that we are actually trying to do something...
 	cout << "Attempting to open MIDI File: " << path << "\n\n";
@@ -276,20 +293,20 @@ int main(int argc, char* argv[]) {
 	track_title[0] = "Song";
 	track_string[0] = "[Song]\n";
 	track_string[0] += "{\n";
-	track_string[0] += "	Name = \"" + name_of_track[0] + "\"\n";
-	track_string[0] += "	Artist = \"\"\n";
-	track_string[0] += "	Charter = \"\"\n";
-	track_string[0] += "	Offset = 0\n";
-	track_string[0] += "	Resolution = " + to_string(delta_time) + "\n";
-	track_string[0] += "	Player2 = bass\n";
-	track_string[0] += "	Difficulty = 0\n";
-	track_string[0] += "	PreviewStart = 0.00\n";
-	track_string[0] += "	PreviewEnd = 0.00\n";
-	track_string[0] += "	Genre = unknown\n";
-	track_string[0] += "	MediaType = \"cd\"\n";
-	track_string[0] += "	MusicStream = \"song.ogg\"\n";
-	track_string[0] += "	GuitarStream = \"guitar.ogg\"\n";
-	track_string[0] += "	BassStream = \"rhythm.ogg\"\n";
+	track_string[0] += "\tName = \"" + name_of_track[0] + "\"\n";
+	track_string[0] += "\tArtist = \"\"\n";
+	track_string[0] += "\tCharter = \"\"\n";
+	track_string[0] += "\tOffset = 0\n";
+	track_string[0] += "\tResolution = " + tostring(delta_time) + "\n";
+	track_string[0] += "\tPlayer2 = bass\n";
+	track_string[0] += "\tDifficulty = 0\n";
+	track_string[0] += "\tPreviewStart = 0.00\n";
+	track_string[0] += "\tPreviewEnd = 0.00\n";
+	track_string[0] += "\tGenre = unknown\n";
+	track_string[0] += "\tMediaType = \"cd\"\n";
+	track_string[0] += "\tMusicStream = \"song.ogg\"\n";
+	track_string[0] += "\tGuitarStream = \"guitar.ogg\"\n";
+	track_string[0] += "\tBassStream = \"rhythm.ogg\"\n";
 	track_string[0] += "}\n";
 
 	//The second one has the BPM Changes and Time Signature Changes.
@@ -312,7 +329,7 @@ int main(int argc, char* argv[]) {
 			{
 			case 0x58: //Time Signature
 				pos += 1;
-				track_string[1] += "	" + to_string(cur_pos) + " = TS " + to_string(readbyte(ibyte, pos)) + "\n";
+				track_string[1] += "\t" + tostring(cur_pos) + " = TS " + tostring(readbyte(ibyte, pos)) + "\n";
 				pos += 3;
 				cur_pos += VLQ_to_Int(ibyte, pos);
 				ts_count += 1;
@@ -320,8 +337,9 @@ int main(int argc, char* argv[]) {
 			case 0x51: //BPM Setup
 				pos += 1;
 				bpm = 60000000000 / ((readbyte(ibyte, pos) * 65536) + (readbyte(ibyte, pos) * 256) + readbyte(ibyte, pos));
-				track_string[1] += "	" + to_string(cur_pos) + " = B " + to_string(bpm) + "\n";
+				track_string[1] += "\t" + tostring(cur_pos) + " = B " + tostring(bpm) + "\n";
 				bpm_average += bpm;
+				//cout << tostring(cur_pos) << endl;
 				cur_pos += VLQ_to_Int(ibyte, pos);
 				bpm_count += 1;
 				break;
@@ -351,7 +369,7 @@ int main(int argc, char* argv[]) {
 		for (int _i = 0; _i < num_of_difficulties; _i++)
 		{
 			track_title[inst_ind[ins][_i]] = difficulties[_i] + instruments[ins];
-			track_string[inst_ind[ins][_i]] = "[" + difficulties[_i] + instruments[ins] + "]\n";
+			track_string[inst_ind[ins][_i]] = "[" + track_title[inst_ind[ins][_i]] + "]\n";
 			track_string[inst_ind[ins][_i]] += "{\n";
 			track_pos[_i] = 0;
 		}
@@ -393,7 +411,7 @@ int main(int argc, char* argv[]) {
 
 					//Write them to the strings
 					for (unsigned int a = 0; a < num_of_difficulties; a++) {
-						track_string[inst_ind[ins][a]] += "	" + to_string(track_pos[a]) + " = E " + text_event + "\n";
+						track_string[inst_ind[ins][a]] += "	" + tostring(track_pos[a]) + " = E " + text_event + "\n";
 					}
 					break;
 				case 0x2F: //el fin... oh wait I hate that language (seriously).
@@ -416,15 +434,15 @@ int main(int argc, char* argv[]) {
 							else {
 								if (track_pos[a] - note_queue[a][b] > delta_time / 4) {
 									//This allows for sustainable notes. Anything lower will have the sustain removed, period.
-									track_string[inst_ind[ins][a]] += "    " + to_string(note_queue[a][b])
-										+ " = N " + to_string(b)
-										+ " " + to_string(track_pos[a] - note_queue[a][b])
+									track_string[inst_ind[ins][a]] += "\t" + tostring(note_queue[a][b])
+										+ " = N " + tostring(b)
+										+ " " + tostring(track_pos[a] - note_queue[a][b])
 										+ "\n";
 								}
 								else {
 									//Snip that tiny (or non-existant) sustain off.
-									track_string[inst_ind[ins][a]] += "    " + to_string(note_queue[a][b])
-										+ " = N " + to_string(b)
+									track_string[inst_ind[ins][a]] += "\t" + tostring(note_queue[a][b])
+										+ " = N " + tostring(b)
 										+ " 0"
 										+ "\n";
 								}
@@ -447,7 +465,7 @@ int main(int argc, char* argv[]) {
 			track_string[inst_ind[ins][_i]] += "}\n";
 		}
 
-		cout << "...Converted!" << endl;
+		cout << "...Converted! (0x" << to_hex(pos) << ")" << endl;
 	}
 
 	//There is one more track to write... and that is the events.
@@ -482,7 +500,7 @@ int main(int argc, char* argv[]) {
 					}
 
 					//Write them to the strings
-					track_string[2] += "	" + to_string(e_pos) + " = E \"" + text_event + "\"\n";
+					track_string[2] += "\t" + tostring(e_pos) + " = E \"" + text_event + "\"\n";
 					break;
 				case 0x2F: //le fin... French is better than Spanish.
 					hit_end = true;
@@ -502,7 +520,7 @@ int main(int argc, char* argv[]) {
 
 		}
 		track_string[2] += "}\n";
-		cout << "...Converted!" << endl;
+		cout << "...Converted! (0x" << to_hex(pos) << ")" << endl;
 	}
 
 	cout << endl << "Writing to file: " << opath << endl;
