@@ -7,7 +7,11 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+<<<<<<< HEAD
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+=======
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+>>>>>>> 80199d91bc65985bd635514a02805e1dada00bc3
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>

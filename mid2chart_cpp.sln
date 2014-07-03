@@ -1,7 +1,15 @@
 ﻿
+<<<<<<< HEAD
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mid2chart_cpp", "mid2chart_cpp\mid2chart_cpp.vcxproj", "{2DC942DB-3035-419F-BD8E-678786EC6489}"
+=======
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mid2chart_cpp", "mid2chart_cpp\mid2chart_cpp.vcxproj", "{C2AB45CE-7C9F-494A-84F2-641772DDB900}"
+>>>>>>> 80199d91bc65985bd635514a02805e1dada00bc3
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +17,17 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+<<<<<<< HEAD
 		{2DC942DB-3035-419F-BD8E-678786EC6489}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2DC942DB-3035-419F-BD8E-678786EC6489}.Debug|Win32.Build.0 = Debug|Win32
 		{2DC942DB-3035-419F-BD8E-678786EC6489}.Release|Win32.ActiveCfg = Release|Win32
 		{2DC942DB-3035-419F-BD8E-678786EC6489}.Release|Win32.Build.0 = Release|Win32
+=======
+		{C2AB45CE-7C9F-494A-84F2-641772DDB900}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C2AB45CE-7C9F-494A-84F2-641772DDB900}.Debug|Win32.Build.0 = Debug|Win32
+		{C2AB45CE-7C9F-494A-84F2-641772DDB900}.Release|Win32.ActiveCfg = Release|Win32
+		{C2AB45CE-7C9F-494A-84F2-641772DDB900}.Release|Win32.Build.0 = Release|Win32
+>>>>>>> 80199d91bc65985bd635514a02805e1dada00bc3
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
